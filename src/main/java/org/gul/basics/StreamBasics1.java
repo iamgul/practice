@@ -6,6 +6,7 @@ import lombok.ToString;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -17,41 +18,42 @@ public class StreamBasics1 {
 
 
         //Q1. Occurrence each character in a given String
-
         String sentence = "My name is Gul Mohammed And I Live in Bangalore, and my hobby is playing";
         String[] array = sentence.split("");
 
-
+        //Stream<String> streamOfString = Stream.of(array); -> can also be used
+        //instead of Arrays.stream(array)
         Map<String, List<String>> collect = Arrays.stream(array).collect(Collectors.groupingBy(e -> e));
         //1st Approach
         collect.forEach((k, v) -> {
             System.out.print(" " + k + "=" + v.size());
         });
+        System.out.println();
 
         //2nd Approach
         Map<String, List<String>> map = Arrays.stream(array).collect(Collectors.groupingBy(e -> e));
-        Map<String, Integer> collect1 = map.entrySet().stream().collect(
+        Map<String, Integer> mapOfCharsAndCount2ndApproach = map.entrySet().stream().collect(
                 Collectors.toMap(e -> e.getKey(), e -> e.getValue().size())
         );
+        System.out.println("mapOfCharsAndCount2ndApproach: "+mapOfCharsAndCount2ndApproach);
 
 
         //3rd Approach //Best Approach
-        Map<String, Long> collect2 = Arrays.stream(array).collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+        Map<String, Long> mapOfCharsAndCount3rdApproach = Arrays.stream(array).collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+        System.out.println("mapOfCharsAndCount3rdApproach : "+mapOfCharsAndCount3rdApproach);
 
         //4th Approach
         IntStream chars = sentence.chars();
         Stream<Character> characterStream = chars.mapToObj(c -> (char) c);
-        Map<Character, Long> collect3 = characterStream.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        Map<Character, Long> mapOfCharsAndCount4thApproach = characterStream.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        System.out.println("mapOfCharsAndCount4thApproach : "+ mapOfCharsAndCount4thApproach);
 
         //Approach 5 to ignore spaces and case sensitivity
                                                   //.replaceAll(" ", "");
-        Map<Character, Long> collect4 = sentence.replace(" ", "").toLowerCase()
+        Map<Character, Long> mapOfCharsAndCountIgnoringCaseSensitivityAndSpace5thApproach = sentence.replace(" ", "").toLowerCase()
                 .chars().mapToObj(c -> (char) c).collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        System.out.println("mapOfCharsAndCountIgnoringCaseSensitivityAndSpace5thApproach : "+mapOfCharsAndCountIgnoringCaseSensitivityAndSpace5thApproach);
 
-        System.out.println("collect1: " + collect1);
-        System.out.println("collect2: " + collect2);
-        System.out.println("collect3: " + collect3);
-        System.out.println("collect4: " + collect4);
         //<<==================================================================================================================>>
 
         //Q2. Occurrence of each Word in a sentence
@@ -60,34 +62,114 @@ public class StreamBasics1 {
         Map<String, Long> collect5 = stream.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
         System.out.println("collect5: " + collect5);
 
+        //Count number of occurrence of words in given String
+        String inputString = "welcome to the code decode and code decode welcome you";
+        String[] split = inputString.split(" ");
+        Stream<String> streamOfString = Stream.of(split);
+        //Here this will not preserve the order of insertion as internally it uses HasMap to store
+        Map<String, Long> mapOfStringAndCountWithoutInsertionOrderMaintained = streamOfString.collect(Collectors.groupingBy(s -> s, Collectors.counting()));
+        System.out.println("mapOfStringAndCountWithoutInsertionOrderMaintained : " + mapOfStringAndCountWithoutInsertionOrderMaintained);
+
+        //However we can pass supplier for Storing in LinkedHashMap to maintain insertion order
+        Map<String, Long> mapOfStringAndCountWithInsertionPreserved = Stream.of(split).collect(Collectors.groupingBy(s -> s, LinkedHashMap::new, Collectors.counting()));
+        System.out.println("mapOfStringAndCountWithInsertionPreserved : " + mapOfStringAndCountWithInsertionPreserved);
+
+        //If we want to sort based on alphabetical order
+        Map<String, Long> mapOfStringAndCountSortedBasedOnAlphabeticalOrder = Stream.of(split).collect(Collectors.groupingBy(s -> s, TreeMap::new, Collectors.counting()));
+        System.out.println("mapOfStringAndCountSortedBasedOnAlphabeticalOrder : " + mapOfStringAndCountSortedBasedOnAlphabeticalOrder);
+
+        //If we want to sort on reverse order //mapOfStringAndCountSortedBasedOnReverseOrder
+        Map<String, Long> mapOfStringAndCountSortedBasedOnReverseOrder = Stream.of(split).collect(
+                Collectors.groupingBy(
+                        s -> s,
+                        //This below line will result in no suitable method found for groupingBy(...) is not applicable (cannot infer type-variable(s)
+                        //This is caused by Java not being able to infer types properly when you use a lambda like () -> new TreeMap<>(Comparator.reverseOrder())
+                        //This often happens when the map supplier lambda is too complex, and Java can't deduce the generic types.
+                        //To fix this, Explicitly define the types
+                        (Supplier<Map<String, Long>>) () -> new TreeMap<>(Comparator.reverseOrder()),
+                        Collectors.counting()
+                ));
+        System.out.println("mapOfStringAndCountSortedBasedOnReverseOrder : " + mapOfStringAndCountSortedBasedOnReverseOrder);
+
+        //Alternative way
+        Map<String, Long> treeMap = new TreeMap<>(Comparator.reverseOrder());
+        Map<String, Long> mapOfWordsAndTheirCount = Stream.of(split).collect(Collectors.groupingBy(s -> s, Collectors.counting()));
+        treeMap.putAll(mapOfWordsAndTheirCount);
+        System.out.println("mapOfWordsAndTheirCountSortedBasedOnReverseOrder: "+treeMap);
+
         //<<==================================================================================================================>>
 
         //Q3. First non-repeating character in String
         // [Note: We are using Linked hashMap because groupingBy internally uses HashMap we don't pass the supplier and
         // HashMap will not preserve the order in which they are processed, and we may get any character that is non-repeating
         // but not the 1st, hence we are passing supplier as LinkedHashMap explicitly.
-        String repeated = "ooemiaabbccdeeacm";
+        String repeated = "zzzzooemiaabbccdeeacm";
         Map<String, Long> mapOfRepeat = Arrays.stream(repeated.split("")).collect(Collectors.groupingBy(Function.identity(), LinkedHashMap::new,  Collectors.counting()));
-        String collect6 = mapOfRepeat.entrySet().stream().filter(e -> e.getValue() < 2).map(Map.Entry::getKey).findFirst().orElse("Not Available");
-        System.out.println("collect6 :"+collect6);
+        String FirstNonRepeatingCharacter = mapOfRepeat.entrySet().stream().filter(e -> e.getValue() < 2).map(Map.Entry::getKey).findFirst().orElse("Not Available");
+        System.out.println("First non-repeating character in String :"+FirstNonRepeatingCharacter);
 
         //<<==================================================================================================================>>
 
         //Q4. Find duplicate characters and their counts.
-        Map<String, Long> collect7 = Arrays.stream(repeated.split("")).collect(Collectors.groupingBy(Function.identity(),  Collectors.counting()))
+        Map<String, Long> duplicateCharsAndTheirCounts = Arrays.stream(repeated.split(""))
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                 .entrySet().stream().filter(e -> e.getValue() > 1)
-                //.peek(e -> System.out.print(e + " "))
                 .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
-        System.out.println("collect7: " + collect7);
+        System.out.println("duplicateCharsAndTheirCounts : " + duplicateCharsAndTheirCounts);
+
+        //Find duplicate characters and their counts maintaining insertion order
+        Map<String, Long> duplicateCharsAndTheirCountsMaintainingTheirInsertionOrder = Arrays.stream(repeated.split(""))
+                .collect(Collectors.groupingBy(
+                        Function.identity(),
+                        LinkedHashMap::new,
+                        Collectors.counting()
+                )).entrySet().stream().filter(e -> e.getValue() > 1)
+                //.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+                //.peek(e -> System.out.print(e + " "))
+                //If we want to preserve the insertion order, we have to use LinkedHashMap::new in groupBy() as well as in toMap(),
+                //because both internally uses HashMap, and it will interfere the order if we don't use in any one of them.
+                //However if we want to sort the output then probably we should use TreeMap::new in toMap() only and not vice-versa(i.e. not in toMap() but in groupBy())
+                //because if we use in groupBy(), it will be overridden by toMap(), and hence order of sort can be changed,
+                //so for sorting we need to mention TreeMap::new in toMap()
+                .collect(Collectors.toMap(
+                        e -> e.getKey(),
+                        e -> e.getValue(),
+                        (v1, v2) -> v1,
+                        LinkedHashMap::new
+                ));
+        System.out.println("duplicateCharsAndTheirCountsMaintainingTheirInsertionOrder: " + duplicateCharsAndTheirCountsMaintainingTheirInsertionOrder);
+        //groupBy() and toMap() both these method takes Supplier map function which tells in which type of Map to collect in.
+        //groupBy() takes it as 2nd Parameter and toMap() takes it as 4th parameter, but for both it has same functionality
+        //to use Supplier<M> in toMap(), we need to use 4 argument method of toMap(), where we need to pass 3rd argument as Merge Function i.e. BinaryOperator
+        //Which merges two values as discussed somewhere
+
+        //Find duplicate characters and their counts by sorting in alphabetical order
+        Map<String, Long> duplicateCharsAndTheirCountsAndNaturalSorting = Stream.of(repeated.split(""))
+                .collect(Collectors.groupingBy(
+                        s -> s,
+                        Collectors.counting()
+                )).entrySet().stream().filter(e -> e.getValue() > 1)
+                .collect(Collectors.toMap(
+                        e -> e.getKey(),
+                        e -> e.getValue(),
+                        (v1, v2) -> v1,
+                        TreeMap::new
+
+                ));
+        System.out.println("duplicateCharsAndTheirCountsAndNaturalSorting : " + duplicateCharsAndTheirCountsAndNaturalSorting);
+
+        //Find duplicate characters and their counts by sorting in reverse order
+        Map<String, Long> duplicateCharsAndTheirCountsAndReverseSorting = new TreeMap<>(Comparator.reverseOrder());
+        duplicateCharsAndTheirCountsAndReverseSorting.putAll(duplicateCharsAndTheirCountsAndNaturalSorting);
+        System.out.println("duplicateCharsAndTheirCountsAndReverseSorting : " + duplicateCharsAndTheirCountsAndReverseSorting);
 
         //<<==================================================================================================================>>
 
         //Q5. Find 1st duplicate characters and their count.
-
-        Map.Entry<String, Long> collect8 = Arrays.stream(repeated.split("")).collect(Collectors.groupingBy(Function.identity(), LinkedHashMap::new, Collectors.counting()))
+        Map.Entry<String, Long> firstDuplicateCharacter = Arrays.stream(repeated.split("")).collect(Collectors.groupingBy(Function.identity(), LinkedHashMap::new, Collectors.counting()))
                 .entrySet().stream().filter(e -> e.getValue() > 1).findFirst().get();
 
-        System.out.println("collect8 "+collect8);
+        System.out.println("firstDuplicateCharacter "+firstDuplicateCharacter);
 
         //<<==================================================================================================================>>
 
@@ -104,16 +186,49 @@ public class StreamBasics1 {
         System.out.println("secondHighest: "+secondHighest+" thirdHighest:"+thirdHighest+" \nsecondLowest :"+secondLowest+" thirdLowest: "+thirdLowest);
 
         //2nd approach
-        Integer secondHighest1 = Arrays.stream(intArray).boxed().distinct().sorted(Comparator.reverseOrder()).skip(1).limit(1).findFirst().get();
-        System.out.println("secondHighest1 :"+secondHighest1);
-
+        Integer secondHighestWithSkipandLimit = Arrays.stream(intArray).boxed().distinct().sorted(Comparator.reverseOrder()).skip(1).limit(1).findFirst().get();
+        System.out.println("secondHighestWithSkipAndLimit :"+secondHighestWithSkipandLimit);
 
         //<<==================================================================================================================>>
 
         //Q7. Longest String/Shortest from Given array of String
-        //1st approach
+
         String[] stringArray = {"hello", "there", "SpringBoot", "Docker", "Micros"};
 
+
+        //approach - A // A bad approach, we should not sort to find the max
+        String s4 = Stream.of(stringArray).sorted((s1, s2) -> {
+            Integer si = s1.length();
+            Integer sii = s2.length();
+            return -si.compareTo(sii);
+        }).findFirst().get();
+
+        //approach - B // Also Bad approach, no need of grouping by
+        Map<Integer, List<String>> collect1 = Stream.of(stringArray).collect(Collectors.groupingBy(s -> s.length()));
+        String s3 = collect1.entrySet().stream().sorted((e1, e2) -> -e1.getKey().compareTo(e2.getKey())).findFirst().get().getValue().get(0);
+
+        //Mistake to avoid, this will sort based on alphabetical order and find the min but not with lengtj
+        //String shortest1 = Stream.of(stringArray).min(Comparator.naturalOrder()).stream().findFirst().orElseThrow();
+
+        //approach - C // Normal aaproach
+        int maxx = 0;
+        int lowest = Integer.MAX_VALUE;
+        String longest = "";
+        String shortest = "";
+        for (String s : stringArray) {
+            int length = s.length();
+            if (length > maxx) {
+                maxx = length;
+                longest = s;
+            } else if (length < lowest) {
+                lowest = length;
+                shortest = s;
+            }
+        }
+        System.out.println("LongestString : "+ longest + " with size: " + maxx);
+        System.out.println("ShortestString : "+ shortest + " with size: " + lowest);
+
+        //1st approach
         Map<String, Integer> MapOf = Arrays.stream(stringArray).collect(Collectors.toMap(Function.identity(), String::length));
         Map.Entry<String, Integer> longestString = MapOf.entrySet().stream().max((e1, e2) -> e1.getValue().compareTo(e2.getValue())).get();
         Map.Entry<String, Integer> shortestString = MapOf.entrySet().stream().min((e1, e2) -> e1.getValue().compareTo(e2.getValue())).get();
@@ -121,6 +236,25 @@ public class StreamBasics1 {
         //2nd Approach
         String max = Arrays.stream(stringArray).max(Comparator.comparing(String::length)).get();
         String min = Arrays.stream(stringArray).min(Comparator.comparing(String::length)).get();
+
+        //OR
+        String s5Max = Arrays.stream(stringArray).max((s1, s2) -> {
+            Integer si = s1.length();
+            Integer sii = s2.length();
+            return si.compareTo(sii);
+        }).get();
+
+        String s6Min = Arrays.stream(stringArray).min((s1, s2) -> {
+            Integer si = s1.length();
+            Integer sii = s2.length();
+            return si.compareTo(sii);
+        }).get();
+
+
+        System.out.println("s5Max====="+s5Max);
+        System.out.println("s6Min====="+s6Min);
+
+
 
 
         System.out.println("collect14 - longestString & shortestString  "+ longestString+" "+shortestString);

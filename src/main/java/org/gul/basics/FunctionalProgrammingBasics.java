@@ -2,9 +2,7 @@ package org.gul.basics;
 
 import java.util.*;
 import java.util.function.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import java.util.stream.*;
 
 public class FunctionalProgrammingBasics {
 
@@ -41,18 +39,41 @@ public class FunctionalProgrammingBasics {
         consumeToPerform.accept(5, 6);
 
     //Streams
-        List<Integer> integerList = IntStream.rangeClosed(1, 100).boxed().toList();
+        //Creating List of Integers, Longs, Doubles
+        List<Integer> integerList = IntStream.rangeClosed(1, 10).boxed().toList();
+        List<Long> longList = LongStream.range(1, 11).boxed().toList();
+
+        //Make all the Long value as Double just by appending .0 in Long value
+        List<Double> doubleList = LongStream.range(1, 11).asDoubleStream().boxed().toList();
+
+        //DoubleStream doesn't have range() & rangeClosed() method but it has generate() and iterate() same as Stream
+        //Make sure to use limit while using these methods as they will generate infinite stream
+        List<Double> doubleListUsingGenerate = DoubleStream.generate(()-> 1.0).limit(10).boxed().toList();
+        List<Double> doubleListUsingIterate = DoubleStream.iterate(1, d -> d + d).limit(10).boxed().toList();
+
+        //For Double to generate, Random class has provided the methods
+        //doubles(long streamSize, double randomNumberOrigin, double randomNumberBound)
+        List<Double> doubleListUsingRandom = new Random().doubles(3,1,10).boxed().toList();
+
+        System.out.println("integerList: " +integerList + "\n" + "longList: " +longList + "\n" + "doubleList: " +doubleList + "\n"
+                + "doubleListUsingRandom: " +doubleListUsingRandom + "\n"  + "doubleListUsingGenerate: " +doubleListUsingGenerate+ "\n"
+                + "doubleListUsingIterate: " +doubleListUsingIterate);
+
+        //<<================================================================================>>
 
         //Configuring of stream -> filter, map
 
         //filter
         Stream<Integer> integerStream = integerList.stream().filter(i -> i % 2 == 0);
-        integerStream.forEach(i -> System.out.println(i));
+        integerStream.forEach(i -> System.out.print(i+" "));
+        System.out.println();
         //or
-        integerList.stream().filter(i -> i % 2 == 0).forEach(i-> System.out.println(i));
+        integerList.stream().filter(i -> i % 2 == 0).forEach(i-> System.out.print(i+" "));
+        System.out.println();
 
         //map
-        integerList.stream().map(i->i*2).forEach(i-> System.out.println(i));
+        integerList.stream().map(i->i*2).forEach(i-> System.out.print(i+" "));
+        System.out.println();
 
 
         //Processing of Streams -> collect(), count(), sorted(), min(), max(), forEach(), of()
@@ -69,6 +90,7 @@ public class FunctionalProgrammingBasics {
         // Set<String> set = people.stream().map(Person::getName).collect(Collectors.toCollection(TreeSet::new));
 
         // Convert elements to strings and concatenate them, separated by commas-->
+        //List<String> things
         // String joined = things.stream().map(Object::toString).collect(Collectors.joining(", "));
 
         // Compute sum of salaries of employees-->
@@ -82,9 +104,10 @@ public class FunctionalProgrammingBasics {
 
         // Partition students into passing and failing-->
         // Map<Boolean, List<Student>> passingFailing = students.stream().collect(Collectors.partitioningBy(s -> s.getGrade() >= PASS_THRESHOLD));
-        Map<Boolean, List<Integer>> collect = integerList.stream().collect(Collectors.partitioningBy(i -> i % 2 == 0));
-        List<Integer> even = collect.get(true);
-        List<Integer> odd = collect.get(false);
+        Map<Boolean, List<Integer>> evenOddMap = integerList.stream().collect(Collectors.partitioningBy(i -> i % 2 == 0));
+        System.out.println("evenOddMap: "+evenOddMap);
+        List<Integer> even = evenOddMap.get(true);
+        List<Integer> odd = evenOddMap.get(false);
         System.out.println("Even::: " + even);
         System.out.println("Odd::: " + odd);
 
@@ -97,9 +120,12 @@ public class FunctionalProgrammingBasics {
         //------//
         //Sort//
         //-----//
-        Stream<Integer> naturalSorted = integerList.stream().sorted(); //can be used directly as well on stream or after configuring
-        Stream<Integer> naturalSortedUsingComparator = integerList.stream().sorted((i1,i2)->i1.compareTo(i2));
-        Stream<Integer> descendingSorted = integerList.stream().sorted((i1, i2) -> i2.compareTo(i1));
+        List<Integer> naturalSorted = integerList.stream().sorted().toList(); //can be used directly as well on stream or after configuring
+        List<Integer> naturalSortedUsingComparator = integerList.stream().sorted((i1,i2)->i1.compareTo(i2)).toList();
+        List<Integer> descendingSorted = integerList.stream().sorted((i1, i2) -> i2.compareTo(i1)).toList();
+        System.out.println("naturalSorted: " +naturalSorted + "\n" + "naturalSortedUsingComparator: " +naturalSortedUsingComparator
+                + "\n" + "descendingSorted: " +descendingSorted + "\n");
+
 
         //--------//
         //Min,Max//
@@ -127,7 +153,7 @@ public class FunctionalProgrammingBasics {
         //----//
         //peek//
         //---//
-        //List<Integer> list = integerList.stream().sorted().filter(e -> e > 10 && e < 40).sorted(Comparator.reverseOrder()).peek(System.out::println).toList();
+        List<Integer> list = integerList.stream().sorted().filter(e -> e > 10 && e < 40).sorted(Comparator.reverseOrder()).peek(System.out::print).toList();
 
 
         //----//
@@ -151,20 +177,22 @@ public class FunctionalProgrammingBasics {
         //----//
         //findFirst//
         //---// Always returns the same first element even in parallel stream
-        Integer i = integerList.stream().filter(e -> e > 10 && e < 40).findFirst().get();
-        integerList.stream().parallel().filter(e -> e > 10 && e < 40).findFirst().ifPresent(System.out::println);
+        Integer i = integerList.stream().filter(e -> e > 5 && e < 40).findFirst().get();
+        integerList.stream().filter(e -> e > 5 && e < 40).findFirst().ifPresent(System.out::println);
+        integerList.stream().parallel().filter(e -> e > 5 && e < 40).findFirst().ifPresent(System.out::println);
 
         //----//
         //findAny//
-        //---// can return the anyt element in parallel stream
-        integerList.stream().parallel().filter(e -> e > 10 && e < 40).findAny().ifPresent(System.out::println);
+        //---// can return any element in parallel stream
+        integerList.stream().filter(e -> e > 5 && e < 40).findAny().ifPresent(System.out::println);
+        integerList.stream().parallel().filter(e -> e > 5 && e < 40).findAny().ifPresent(System.out::println);
 
         //----//
         //anyMatch//
         //---// same as java || (OR operations)
-        integerList.stream().filter(e -> e > 10 && e < 40).findAny().isPresent(); // This both can be replaced
-        integerList.stream().filter(e -> e > 10 && e < 40).findFirst().isPresent(); // with anyMatch,  i.e. if there is filter and findFirst then anymatch can be used
-        boolean anyMatch = integerList.stream().anyMatch(e -> e > 10 && e < 40);
+        integerList.stream().filter(e -> e > 5 && e < 40).findAny().isPresent(); // This both can be replaced
+        integerList.stream().filter(e -> e > 5 && e < 40).findFirst().isPresent(); // with anyMatch,  i.e. if there is filter and findFirst then anymatch can be used
+        boolean anyMatch = integerList.stream().anyMatch(e -> e > 5 && e < 40);
 
         //----//
         //allMatch//
@@ -176,13 +204,6 @@ public class FunctionalProgrammingBasics {
         //---//
         boolean b1 = integerList.stream().filter(e -> e > 9 && e < 40).noneMatch(e -> e > 10);
 
-
-        //Count number od occurrence of words in given String
-        String inputString = "welcome to the code decode and code decode welcome you";
-        Stream.of(inputString).collect(Collectors.groupingBy(s-> s)).entrySet().forEach(e-> {
-            System.out.println(e.getKey());
-            System.out.println(e.getValue());
-        });
 
 
         //Parallel Stream
