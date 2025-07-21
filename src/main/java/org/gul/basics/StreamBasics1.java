@@ -191,26 +191,59 @@ public class StreamBasics1 {
 
         //<<==================================================================================================================>>
 
-        //Q7. Longest String/Shortest from Given array of String
+        //Q7. Find Longest/Shortest string from Given array of String
 
         String[] stringArray = {"hello", "there", "SpringBoot", "Docker", "Micros"};
-
-
-        //approach - A // A bad approach, we should not sort to find the max
-        String s4 = Stream.of(stringArray).sorted((s1, s2) -> {
-            Integer si = s1.length();
-            Integer sii = s2.length();
-            return -si.compareTo(sii);
-        }).findFirst().get();
-
-        //approach - B // Also Bad approach, no need of grouping by
-        Map<Integer, List<String>> collect1 = Stream.of(stringArray).collect(Collectors.groupingBy(s -> s.length()));
-        String s3 = collect1.entrySet().stream().sorted((e1, e2) -> -e1.getKey().compareTo(e2.getKey())).findFirst().get().getValue().get(0);
 
         //Mistake to avoid, this will sort based on alphabetical order and find the min but not with lengtj
         //String shortest1 = Stream.of(stringArray).min(Comparator.naturalOrder()).stream().findFirst().orElseThrow();
 
-        //approach - C // Normal aaproach
+        //1st approach
+        Map<String, Integer> mapOf = Arrays.stream(stringArray).collect(Collectors.toMap(Function.identity(), String::length));
+        Map.Entry<String, Integer> longestByToMapApproach = mapOf.entrySet().stream().max((e1, e2) -> e1.getValue().compareTo(e2.getValue())).get();
+        Map.Entry<String, Integer> ShortestByToMapApproach = mapOf.entrySet().stream().min((e1, e2) -> e1.getValue().compareTo(e2.getValue())).get();
+        System.out.println("longestByToMapApproach : " + longestByToMapApproach);
+        System.out.println("ShortestByToMapApproach : " + ShortestByToMapApproach);
+
+        //2nd Approach //Best Approach
+        String longestByMaxComparatorComparingApproach = Arrays.stream(stringArray).max(Comparator.comparing(String::length)).get();
+        //Stream.of(stringArray).max(Comparator.comparingInt(s->s.length()));
+        String ShortestByMinComparatorComparingApproach = Arrays.stream(stringArray).min(Comparator.comparing(String::length)).get();
+        System.out.println("longestByMaxComparatorComparingApproach : " + longestByMaxComparatorComparingApproach);
+        System.out.println("ShortestByMinComparatorComparingApproach : " + ShortestByMinComparatorComparingApproach);
+
+        //OR
+        String longestByMaxComparatorCompareToApproach = Arrays.stream(stringArray).max((s1, s2) -> {
+            Integer si = s1.length();
+            Integer sii = s2.length();
+            return si.compareTo(sii);
+        }).get();
+
+        String ShortestByMinComparatorCompareToApproach = Arrays.stream(stringArray).min((s1, s2) -> {
+            Integer si = s1.length();
+            Integer sii = s2.length();
+            return si.compareTo(sii);
+        }).get();
+        System.out.println("longestByMaxComparatorCompareToApproach : " + longestByMaxComparatorCompareToApproach);
+        System.out.println("ShortestByMinComparatorCompareToApproach : " + ShortestByMinComparatorCompareToApproach);
+
+
+        //approach - A // A bad approach, we should not sort to find the max
+        String longestBySortingApproach = Stream.of(stringArray).sorted((s1, s2) -> {
+            Integer si = s1.length();
+            Integer sii = s2.length();
+            return -si.compareTo(sii);
+        }).findFirst().get();
+        System.out.println("longestBySortingApproach : "+longestBySortingApproach);
+
+        //approach - B // Also Bad approach, no need of grouping by
+        Map<Integer, List<String>> collect1 = Stream.of(stringArray).collect(Collectors.groupingBy(s -> s.length()));
+        String longestByGroupingByApproach = collect1.entrySet().stream().sorted(
+                (e1, e2) -> -e1.getKey().compareTo(e2.getKey()))
+                .findFirst().get().getValue().get(0);
+        System.out.println("longestByGroupingByApproach : "+ longestByGroupingByApproach);
+
+        //approach - C // Normal approach
         int maxx = 0;
         int lowest = Integer.MAX_VALUE;
         String longest = "";
@@ -225,47 +258,15 @@ public class StreamBasics1 {
                 shortest = s;
             }
         }
-        System.out.println("LongestString : "+ longest + " with size: " + maxx);
-        System.out.println("ShortestString : "+ shortest + " with size: " + lowest);
-
-        //1st approach
-        Map<String, Integer> MapOf = Arrays.stream(stringArray).collect(Collectors.toMap(Function.identity(), String::length));
-        Map.Entry<String, Integer> longestString = MapOf.entrySet().stream().max((e1, e2) -> e1.getValue().compareTo(e2.getValue())).get();
-        Map.Entry<String, Integer> shortestString = MapOf.entrySet().stream().min((e1, e2) -> e1.getValue().compareTo(e2.getValue())).get();
-
-        //2nd Approach
-        String max = Arrays.stream(stringArray).max(Comparator.comparing(String::length)).get();
-        String min = Arrays.stream(stringArray).min(Comparator.comparing(String::length)).get();
-
-        //OR
-        String s5Max = Arrays.stream(stringArray).max((s1, s2) -> {
-            Integer si = s1.length();
-            Integer sii = s2.length();
-            return si.compareTo(sii);
-        }).get();
-
-        String s6Min = Arrays.stream(stringArray).min((s1, s2) -> {
-            Integer si = s1.length();
-            Integer sii = s2.length();
-            return si.compareTo(sii);
-        }).get();
-
-
-        System.out.println("s5Max====="+s5Max);
-        System.out.println("s6Min====="+s6Min);
-
-
-
-
-        System.out.println("collect14 - longestString & shortestString  "+ longestString+" "+shortestString);
-        System.out.println("collect14 - max & min  "+ max+" "+min);
+        System.out.println("LongestByTraditionApproach : "+ longest + " with size: " + maxx);
+        System.out.println("ShortestByTraditionApproach : "+ shortest + " with size: " + lowest);
 
         //<<==================================================================================================================>>
 
         //Q8. Find all the elements from Array which starts with 1
         int[] intArrays = {1, 2, 31, 4, 5, 16, 7, 8, 19, 20};
-        List<String> collect133 = Arrays.stream(intArrays).boxed().map(i -> i.toString()).filter(i -> i.startsWith("1")).toList();
-        System.out.println("collect133 "+collect133);
+        List<String> allNumbersThatStartsWith1 = Arrays.stream(intArrays).boxed().map(i -> i.toString()).filter(i -> i.startsWith("1")).toList();
+        System.out.println("allNumbersThatStartsWith1 " + allNumbersThatStartsWith1);
 
         //<<==================================================================================================================>>
 
@@ -366,6 +367,9 @@ public class StreamBasics1 {
         System.out.println("Average Salary using mapToInt:"+average1.getAsDouble());
 
         //<<==================================================================================================================>>
+
+
+
 
 
     }
