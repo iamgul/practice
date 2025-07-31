@@ -25,6 +25,11 @@ public class Person {
         List<String> emailsDeepCopy = new ArrayList<>();
         emailsDeepCopy.addAll(emails);
         this.emails = emailsDeepCopy;
+        //OR this can also be done as
+        //this.emails = new ArrayList<>();
+        //this.emails.addAll(emails);
+
+
     }
 
     @Override
