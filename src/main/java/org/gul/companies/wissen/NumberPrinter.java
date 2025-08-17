@@ -19,7 +19,11 @@ import static java.lang.Math.max;
         5 4 3 2 1*/
 public class NumberPrinter {
     public static void main(String[] args) throws InterruptedException {
+
+
         //print();
+
+
         ObjectLevelLocking o1 = new ObjectLevelLocking();
         ObjectLevelLocking o2 = new ObjectLevelLocking();
 
@@ -28,32 +32,72 @@ public class NumberPrinter {
 
 //        Runnable r1 = () -> o1.m1();
 //        Runnable r2 = () -> o2.m1();
+
 //        Thread t1 = new Thread(r1);
 //        Thread t2 = new Thread(r1);
+
 //        t1.start();
 //        t2.start();
 
-        //Since same object it accessing the lock it will wait
+        //Object Level Locking
+        //---------------------
+        //Since same object it accessing the lock it will wait -  method level lock
 //        new Thread(() -> o1.m1()).start();
 //        new Thread(() -> o1.m1()).start();
+
+        //Since same object it accessing the lock it will wait - block level wait
+//        new Thread(() -> o1.m2()).start();
+//        new Thread(() -> o1.m2()).start();
+
+        //This is normal method, and it will be executed simultaneously with synchronized methods
+//        new Thread(() -> o1.m3()).start();
+
+        // in above same object is accessing the different synchronized methods i.e. m1(), m2(),
+        // and it will execute only one synchronized methods at once, i.e. at once one object(same object)
+        // can execute only one synchronized method. but it(same object) can execute other non synchronized methods simultaneously
+
+        //same object --> all object level synchronized methods/block --> synchronous execution ( one by one)
+        //o1.m1()
+        //o1.m1()
+        //o1.m2()
+
+        //different objects --> same or diff synchronized methods/block --> parallel execution
+        //o1.m1()
+        //o2.m1() - diff obj - same synchronized methods/block --> parallel execution
+        //--------
+        //o1.m2()
+        //o2.m1() - diff obj - diff synchronized methods/block --> parallel execution
+
+        //One thing to note is since o1.m1() & o1.m2() are acting on same object it will be synchronous
+        //similarly(o2.m1() & o2.m1())if all of above 4 methods are executed by 4 different threads
+        //        new Thread(() -> o1.m1()).start();
+        //        new Thread(() -> o2.m1()).start();
+        //        new Thread(() -> o1.m2()).start();
+        //        new Thread(() -> o2.m1()).start();
 
         // Since different objects are accessing the locks, it will be executed in parallel
 //        new Thread(() -> o1.m1()).start();
 //        new Thread(() -> o2.m1()).start();
 
+        //Class Level Locking
+        //---------------------
 //        new Thread(() -> c1.m1()).start();
 //        new Thread(() -> c2.m1()).start();
+        //In class level only one static synchronized(class level) can be accessed by any object
 
 
-//        Parent p = new Child();
-//        //p.run();
+        Parent p = new Child();
+        p.run();
+        //Output:
+        //Child run
+        //Parent run
+        //Child walks
+        //Parent Walk
 //
 //
 //        List<Integer> list = Arrays.asList(1,2,4,5,6,7,8,9);
-//        //(1,,,5,,7,,9);
-//        //1+25+49+81
 //        Integer reduce = list.stream().filter(e -> e % 2 != 0).map(e -> e * e).reduce(0, Integer::sum);
-//        //System.out.println("reduce: "+reduce);
+//        System.out.println("reduce: "+reduce);
 //
 //        String longestEvenString = "HEllo my name is Gul MOhammed I am studying12 in BE, Computer Science Education";
 //        String[] split = longestEvenString.split(" ");
@@ -80,16 +124,17 @@ public class NumberPrinter {
 
         String transform = "Hello World";
         Stream<String> split = Stream.of(transform.split(" "));
-        split.forEach(s->{
-            String unique = Stream.of(s.split(""))
-                    .distinct().collect(Collectors.joining());
+        split.forEach(s-> {
+                    String unique = Stream.of(s.split(""))
+                            .distinct().collect(Collectors.joining());
 
-            String reversed = Stream.of(unique).map(StringBuilder::new)
-                    .map(StringBuilder::reverse)
-                    .map(StringBuilder::toString)
-                    .collect(Collectors.joining());
+                    String reversed = Stream.of(unique).map(StringBuilder::new)
+                            .map(StringBuilder::reverse)
+                            .map(StringBuilder::toString)
+                            .collect(Collectors.joining());
 
-            //System.out.print(reversed +" ");
+                    System.out.print(reversed + " ");
+        });
 
            // split array int smaller arrays based on given size. int[] original =
             // {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}; int splitSize = 3; /* expected Output [0, 1, 2] [3, 4, 5] [6, 7, 8] [9] *
@@ -112,11 +157,11 @@ public class NumberPrinter {
                     tempArray[j]=original[i];
                     i++;
                 }
-                System.out.println(Arrays.toString(tempArray));
+                //System.out.println(Arrays.toString(tempArray));
             }
 
 
-        });
+
 
 
 
@@ -153,42 +198,12 @@ public class NumberPrinter {
         return profit;
     }
 
-    //     int minNum = Integer.MAX_VALUE; // 1
-    //     int minIndex = 0; // [1]
-    //     int length = prices.length;
-    //     int maxProfit = 0;
-
-    //     for (int i = 0; i < length; i++) {
-    //         if (prices[i] < minNum) {
-    //             minNum = prices[i];
-    //             minIndex = i;
-    //         }
-    //     }
-    //     System.out.println("minNum & minIndx: "+minNum+" : "+minIndex);
-
-    //     int maxNum = Integer.MIN_VALUE;
-    //     for (int i = minIndex+1; i < length ; i++) {
-    //         if (prices[i] > maxNum) {
-    //             maxNum = prices[i];
-    //         }
-    //     }
-
-    //     System.out.println("maxNum: "+maxNum);
-    //     if(maxNum==Integer.MIN_VALUE){
-    //         return 0;
-    //     }
-
-    //     maxProfit = maxNum - minNum;
-    //     return maxProfit;
-
-    // }
-
 
 }
 
 class ObjectLevelLocking {
-    synchronized void m1() {
-        System.out.println(Thread.currentThread().getName() + " : sleeping for 5 sec");
+    public synchronized void m1() { // method level
+        System.out.println("m1() - method level " + Thread.currentThread().getName() + " : sleeping for 2 sec");
         try {
             Thread.sleep(2_000);
         } catch (InterruptedException e) {
@@ -197,13 +212,48 @@ class ObjectLevelLocking {
         System.out.println(Thread.currentThread().getName() + " : Wake Up");
 
     }
-}
+
+    public void m2() { // block level
+        synchronized (this) {
+            System.out.println("m2() - block level " + Thread.currentThread().getName() + " : sleeping for 2 sec");
+            try {
+                Thread.sleep(2_000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println(Thread.currentThread().getName() + " : Wake Up");
+        }
+
+    }
+
+    public void m3() {
+            System.out.println("m3() - normal method " + Thread.currentThread().getName() + " : sleeping for 2 sec");
+            try {
+                Thread.sleep(2_000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println(Thread.currentThread().getName() + " : Wake Up");
+        }
+
+    }
 
 class ClassLevelLocking {
-    void m1() {
+    public static synchronized void m1() { //method level
+        System.out.println("Class Level");
+            System.out.println(Thread.currentThread().getName() + " : sleeping for 5 sec");
+            try {
+                Thread.sleep(5_000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println(Thread.currentThread().getName() + " : Wake Up");
+        }
+
+    public void m2() { //block level
         System.out.println("Class Level");
         synchronized (ClassLevelLocking.class) {
-        //synchronized (this) { // this again it will be object level locking
+            //synchronized (this) { // this again it will be object level locking
             System.out.println(Thread.currentThread().getName() + " : sleeping for 5 sec");
             try {
                 Thread.sleep(5_000);

@@ -49,7 +49,7 @@ class Printer {
             }
 
             if (count <= maxNumberToPrint) {
-                //System.out.println("Thread-" + threadId + " : " + count);
+                System.out.println("Thread-" + threadId + " : " + count);
                 //System.out.println(Thread.currentThread() + " : " + count );
                 count++;
                 turn = turn % totalNumberOfThreads + 1;

@@ -1,8 +1,8 @@
-import org.gul.T3;
+import org.gul.StringRotation;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest(classes = T3.class)
+@SpringBootTest(classes = StringRotation.class)
 class PrepApplicationTests {
 
 	@Test
