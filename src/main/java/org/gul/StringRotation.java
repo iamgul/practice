@@ -1,6 +1,6 @@
 package org.gul;
 
-public class T3 {
+public class StringRotation {
 
 /*    Given two strings s1 and s2, write a snippet to check whether s2 is a rotation
 
@@ -18,12 +18,16 @@ public class T3 {
 
     public static void main(String[] args) {
         
-        String s1 = "ABCD";
+        String s1 = "ABCD"; // DABC //CDAB
         String s2 = "CDAB"; //BCDA
-        boolean isRotation = isRotation(s1,s2);
+        //boolean isRotation = isRotation(s1,s2);
+        boolean isRotation1 = isRotation1(s1,s2);
+        System.out.println(isRotation1);
         
         
     }
+
+
 
     private static boolean isRotation(String s1, String s2) {
         boolean isRotation = false;
@@ -39,10 +43,37 @@ public class T3 {
             String substring = s2.substring(indexOfS2);
 
         }
-        
-
 
         return isRotation;
+    }
+
+
+
+    /*
+        📌 Key Idea
+        👉 If s2 is a rotation of s1, then s2 must always be a substring of s1 + s1.
+
+        Why?
+
+        Example: s1 = "ABCD"
+
+        s1 + s1 = "ABCDABCD"
+
+        All possible rotations of s1 are inside this:
+        "ABCD", "BCDA", "CDAB", "DABC"
+
+        So if s2 = "CDAB", check if "CDAB" is a substring of "ABCDABCD" → ✅ True
+
+     */
+    private static boolean isRotation1(String s1, String s2) {
+
+        if (s1 == null || s2 == null || s1.length() != s2.length()) {
+            return false;
+        }
+
+        // check if s2 is a substring of s1+s1
+        String temp = s1 + s1;
+        return temp.contains(s2);
     }
 
 

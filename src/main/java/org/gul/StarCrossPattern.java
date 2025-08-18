@@ -1,11 +1,6 @@
 package org.gul;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-
-public class Test5 {
+public class StarCrossPattern {
 
 
     public static void main(String[] args) {
@@ -18,20 +13,14 @@ public class Test5 {
         int length = 5;
         for (int i = 0; i < length; i++) {
             for (int j = 0; j < length; j++) {
-                if (i == j  || j == length - i) {
+                if (i == j || (length - 1) == i + j) {
                     System.out.print("*");
-                }else{
-                    System.out.print("-");
+                } else {
+                    System.out.print(" ");
                 }
             }
-
+            System.out.println();
         }
-
-
-
-
-
-
 
     }
 }
