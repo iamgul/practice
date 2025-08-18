@@ -104,6 +104,7 @@ public class FunctionalProgrammingBasics {
 
         // Partition students into passing and failing-->
         // Map<Boolean, List<Student>> passingFailing = students.stream().collect(Collectors.partitioningBy(s -> s.getGrade() >= PASS_THRESHOLD));
+
         Map<Boolean, List<Integer>> evenOddMap = integerList.stream().collect(Collectors.partitioningBy(i -> i % 2 == 0));
         System.out.println("evenOddMap: "+evenOddMap);
         List<Integer> even = evenOddMap.get(true);

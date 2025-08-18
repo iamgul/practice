@@ -104,9 +104,11 @@ public class StreamBasics1 {
         // HashMap will not preserve the order in which they are processed, and we may get any character that is non-repeating
         // but not the 1st, hence we are passing supplier as LinkedHashMap explicitly.
         String repeated = "zzzzooemiaabbccdeeacm";
-        Map<String, Long> mapOfRepeat = Arrays.stream(repeated.split("")).collect(Collectors.groupingBy(Function.identity(), LinkedHashMap::new,  Collectors.counting()));
-        String FirstNonRepeatingCharacter = mapOfRepeat.entrySet().stream().filter(e -> e.getValue() < 2).map(Map.Entry::getKey).findFirst().orElse("Not Available");
+        Stream<String> stringStream = Arrays.stream(repeated.split(""));
+        Map<String, Long> mapOfRepeat = stringStream.collect(Collectors.groupingBy(Function.identity(), LinkedHashMap::new,  Collectors.counting()));
+        String FirstNonRepeatingCharacter = mapOfRepeat.entrySet().stream().filter(e -> e.getValue() < 2).map(e->e.getKey()).findFirst().orElse("Not Available");
         System.out.println("First non-repeating character in String :"+FirstNonRepeatingCharacter);
+
 
         //<<==================================================================================================================>>
 
@@ -342,7 +344,11 @@ public class StreamBasics1 {
 
         //Approach 1 - Making the employee as Map
         Map<String, Integer> collect13 = employees.stream().collect(Collectors.toMap(e -> e.getName(), e -> e.getSalary()));
-        Map<Integer, List<String>> collect14 = collect13.entrySet().stream().collect(Collectors.groupingBy(e -> e.getValue(), Collectors.mapping(e -> e.getKey(), Collectors.toList())));
+        Map<Integer, List<String>> collect14 = collect13.entrySet().stream().collect(
+                Collectors.groupingBy(
+                        e -> e.getValue(),
+                        Collectors.mapping(e -> e.getKey(), Collectors.toList())
+                ));
         List<Map.Entry<Integer, List<String>>> list = collect14.entrySet().stream()
                 .sorted((e1, e2) -> e1.getKey().compareTo(e2.getKey())).toList();
         System.out.println(list);
