@@ -6,20 +6,21 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Service
 public class ProducerService {
 
     @Autowired             //Key Value
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private KafkaTemplate<Object, List<String>> kafkaTemplate;
 
     @Value("${kafka_topic}")
     private String kafkaTopic;
 
-    public void pushToTopic(String messageRequest) {
+    public void pushToTopic(List<String> messagesRequest) {
 
-        CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(kafkaTopic, messageRequest);
+        CompletableFuture<SendResult<Object, List<String>>> future = kafkaTemplate.send(kafkaTopic, messagesRequest);
 
         //BiConsumer(T t, Throwable ex)
         future.whenComplete((result,ex)->{
